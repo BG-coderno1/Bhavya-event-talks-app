@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="bg-gradient-glow blob-1"></div>
+    <div class="bg-gradient-glow blob-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>BigQuery</h1>
+                    <span>Release Hub</span>
+                </div>
+            </div>
+            
+            <div class="controls-area">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search releases...">
+                </div>
+                
+                <div class="filter-wrapper">
+                    <select id="typeFilter">
+                        <option value="ALL">All Types</option>
+                        <option value="Feature">Features</option>
+                        <option value="Changed">Changes</option>
+                        <option value="Deprecated">Deprecated</option>
+                        <option value="Fixed">Fixed</option>
+                        <option value="General">Other</option>
+                    </select>
+                </div>
+
+                <button id="refreshBtn" class="btn btn-primary" title="Refresh Release Notes">
+                    <i class="fa-solid fa-arrows-rotate refresh-icon" id="spinnerIcon"></i>
+                    <span>Refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Counter Section -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <span class="stat-label">Total Updates</span>
+                <span class="stat-value" id="statTotal">-</span>
+            </div>
+            <div class="stat-card border-feature">
+                <span class="stat-label">Features (GA & Preview)</span>
+                <span class="stat-value text-feature" id="statFeatures">-</span>
+            </div>
+            <div class="stat-card border-changed">
+                <span class="stat-label">Changes & Tweak</span>
+                <span class="stat-value text-changed" id="statChanges">-</span>
+            </div>
+            <div class="stat-card border-other">
+                <span class="stat-label">Deprecations & Fixes</span>
+                <span class="stat-value text-other" id="statOthers">-</span>
+            </div>
+        </section>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState">
+                <div class="pulse-loader">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <p>Parsing latest feed from Google Cloud...</p>
+            </div>
+
+            <!-- Empty / No Results State -->
+            <div class="empty-state hidden" id="emptyState">
+                <i class="fa-solid fa-inbox empty-icon"></i>
+                <h3>No Release Notes Found</h3>
+                <p>Try resetting your search query or filters.</p>
+            </div>
+
+            <!-- Grid of Cards -->
+            <div class="releases-grid" id="releasesGrid">
+                <!-- Cards injected by JS -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>BigQuery Release Hub &bull; Powered by Flask, Vanilla JS, and CSS</p>
+            <p class="cache-time" id="cacheTime">Last updated: -</p>
+        </footer>
+    </div>
+
+    <!-- Twitter Draft Modal -->
+    <div class="modal-overlay hidden" id="tweetModal">
+        <div class="modal-card glass-modal">
+            <div class="modal-header">
+                <h3>Draft Tweet</h3>
+                <button class="close-modal-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tweet-preview-container">
+                    <div class="tweet-user-profile">
+                        <div class="avatar"><i class="fa-brands fa-twitter"></i></div>
+                        <div class="user-info">
+                            <span class="display-name">Cloud Publisher</span>
+                            <span class="username">@cloud_release</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tweet-textarea-wrapper">
+                        <textarea id="tweetTextarea" placeholder="What's happening?"></textarea>
+                    </div>
+
+                    <div class="tweet-footer">
+                        <div class="tweet-char-counter" id="charCounter">0 / 280</div>
+                    </div>
+                </div>
+                <div class="tweet-tips">
+                    <p><i class="fa-solid fa-circle-info"></i> Feel free to edit the text above. Click "Share on X" to open Twitter's compose screen.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelTweetBtn">Cancel</button>
+                <button class="btn btn-twitter" id="shareTweetBtn">
+                    <i class="fa-brands fa-x-twitter"></i>
+                    <span>Share on X</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Local JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

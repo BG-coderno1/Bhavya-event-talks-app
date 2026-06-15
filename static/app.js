@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emptyState = document.getElementById('emptyState');
     const searchInput = document.getElementById('searchInput');
     const typeFilter = document.getElementById('typeFilter');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const spinnerIcon = document.getElementById('spinnerIcon');
     const cacheTime = document.getElementById('cacheTime');
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
     refreshBtn.addEventListener('click', () => fetchReleases(true));
+    exportCsvBtn.addEventListener('click', exportToCsv);
     
     searchInput.addEventListener('input', (e) => {
         activeFilters.search = e.target.value.toLowerCase().trim();
@@ -141,13 +143,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.content_html}
                     </div>
                 </div>
-                <div class="card-actions">
+                <div class="card-actions" style="gap: 8px;">
+                    <button class="btn btn-secondary btn-copy-card" data-id="${item.id}" title="Copy to clipboard">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
                     <button class="btn btn-twitter btn-tweet-card" data-id="${item.id}">
                         <i class="fa-brands fa-x-twitter"></i>
                         <span>Draft Tweet</span>
                     </button>
                 </div>
             `;
+
+            // Add Event Listener to Copy Button
+            card.querySelector('.btn-copy-card').addEventListener('click', () => {
+                copyToClipboard(item);
+            });
 
             // Add Event Listener to Tweet Button
             card.querySelector('.btn-tweet-card').addEventListener('click', () => {
@@ -273,5 +284,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 toast.remove();
             }, 300);
         }, 4000);
+    }
+
+    // Copy update details to clipboard
+    function copyToClipboard(item) {
+        const textToCopy = `BigQuery Release Note (${item.date}) - ${item.type}:\n${item.plain_text}`;
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                showToast('Copied release note to clipboard!', 'success');
+            })
+            .catch(err => {
+                console.error('Error copying text: ', err);
+                showToast('Failed to copy to clipboard.', 'error');
+            });
+    }
+
+    // Export currently filtered releases to CSV
+    function exportToCsv() {
+        const filtered = releases.filter(item => {
+            const matchesSearch = item.plain_text.toLowerCase().includes(activeFilters.search) || 
+                                  item.type.toLowerCase().includes(activeFilters.search) ||
+                                  item.date.toLowerCase().includes(activeFilters.search);
+            const matchesType = activeFilters.type === 'ALL' || item.type === activeFilters.type;
+            return matchesSearch && matchesType;
+        });
+
+        if (filtered.length === 0) {
+            showToast('No releases available to export.', 'error');
+            return;
+        }
+
+        let csvRows = [];
+        csvRows.push("Date,Type,Description");
+
+        filtered.forEach(item => {
+            const cleanDate = `"${item.date.replace(/"/g, '""')}"`;
+            const cleanType = `"${item.type.replace(/"/g, '""')}"`;
+            const cleanText = `"${item.plain_text.replace(/"/g, '""')}"`;
+            csvRows.push(`${cleanDate},${cleanType},${cleanText}`);
+        });
+
+        const csvContent = csvRows.join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bigquery_releases_${new Date().toISOString().slice(0,10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast(`Successfully exported ${filtered.length} release notes to CSV!`, 'success');
     }
 });
